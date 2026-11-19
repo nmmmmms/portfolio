@@ -664,24 +664,29 @@
   });
 
  
+
 let wheelDelta = 0;
 let wheelLocked = false;
-let wheelResetTimer;
+let wheelGestureTimer = null;
 
 window.addEventListener('wheel', (e) => {
   e.preventDefault();
 
-  if (wheelLocked || isAnimating) {
-    clearTimeout(wheelResetTimer);
-    wheelResetTimer = setTimeout(() => {
-      wheelLocked = false;
-      wheelDelta = 0;
-    }, 250);
-    return;
-  }
+  // 每次收到滾動事件，都重新計算手勢結束時間
+  clearTimeout(wheelGestureTimer);
 
+  wheelGestureTimer = setTimeout(() => {
+    wheelLocked = false;
+    wheelDelta = 0;
+  }, 220);
+
+  // 動畫期間或同一段手勢已經觸發時，不重複切換
+  if (isAnimating || wheelLocked) return;
+
+  // 累積觸控板的細微滾動量
   wheelDelta += e.deltaY;
 
+  // 達到門檻才切換
   if (Math.abs(wheelDelta) < 30) return;
 
   const direction = wheelDelta > 0 ? 1 : -1;
@@ -692,13 +697,8 @@ window.addEventListener('wheel', (e) => {
   const current = getCurrentPanelIndex();
   goToPanel(current + direction);
 
-  clearTimeout(wheelResetTimer);
-  wheelResetTimer = setTimeout(() => {
-    wheelLocked = false;
-    wheelDelta = 0;
-  }, 500);
-
 }, { passive: false });
+
 
   document.addEventListener('touchmove', (e) => {
   e.preventDefault();
