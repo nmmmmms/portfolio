@@ -534,7 +534,7 @@
 <footer id="siteFooter" data-header="light">
   <div class="footer-links"></div>
   <div class="footer-bottom">
-    <span>For resume and portfolio purposes only. ver.2</span>
+    <span>For resume and portfolio purposes only. ver.4</span>
     <span>Designed by ZXF © 2026 </span>
     <span><br><br>ʕ•̮͡•ʔ ฅ</span>
   </div>
@@ -715,26 +715,107 @@ function goToPanel(index){
   });
 
 
+
 let wheelDelta = 0;
-let wheelGestureTimer = null;
-let ignoreWheelGesture = false;
+let wheelEndTimer = null;
+let wheelUnlockTimer = null;
+
+let isAnimating = false;
+let wheelLocked = false;
+
+function getCurrentPanelIndex(){
+  if (
+    window.innerHeight + window.scrollY >=
+    document.documentElement.scrollHeight - 2
+  ) {
+    return panels.length - 1;
+  }
+
+  let closest = 0;
+  let minDist = Infinity;
+
+  panels.forEach((p, i) => {
+    const dist = Math.abs(p.getBoundingClientRect().top);
+
+    if (dist < minDist) {
+      minDist = dist;
+      closest = i;
+    }
+  });
+
+  return closest;
+}
+
+function unlockWheel(){
+  clearTimeout(wheelUnlockTimer);
+
+  if (isAnimating) return;
+
+  wheelUnlockTimer = setTimeout(() => {
+    if (!isAnimating) {
+      wheelLocked = false;
+      wheelDelta = 0;
+    }
+  }, 450);
+}
+
+function goToPanel(index){
+  if (drawerOpen) closeDrawer();
+  if (isAnimating) return;
+
+  index = Math.max(0, Math.min(panels.length - 1, index));
+
+  const target = panels[index];
+  if (!target) return;
+
+  if (Math.abs(target.getBoundingClientRect().top) < 2) {
+    return;
+  }
+
+  isAnimating = true;
+  wheelLocked = true;
+
+  clearTimeout(wheelUnlockTimer);
+
+  let finished = false;
+
+  const finishAnimation = () => {
+    if (finished) return;
+    finished = true;
+
+    isAnimating = false;
+
+    document.removeEventListener(
+      'scrollend',
+      finishAnimation
+    );
+
+    clearTimeout(animationFallback);
+
+    unlockWheel();
+  };
+
+  document.addEventListener(
+    'scrollend',
+    finishAnimation,
+    { once: true }
+  );
+
+  target.scrollIntoView({
+    behavior: 'smooth',
+    block: 'start'
+  });
+
+  const animationFallback = setTimeout(
+    finishAnimation,
+    1400
+  );
+}
+
+// 導覽列與選單仍使用原本的 goToPanel()
 
 window.addEventListener('wheel', (e) => {
   e.preventDefault();
-
-  clearTimeout(wheelGestureTimer);
-
-  if (isAnimating || ignoreWheelGesture) {
-    ignoreWheelGesture = true;
-    wheelDelta = 0;
-
-    wheelGestureTimer = setTimeout(() => {
-      ignoreWheelGesture = false;
-      wheelGestureTimer = null;
-    }, 280);
-
-    return;
-  }
 
   let delta = e.deltaY;
 
@@ -744,23 +825,37 @@ window.addEventListener('wheel', (e) => {
     delta *= window.innerHeight;
   }
 
+  // 動畫中或鎖定中，不接受新的切換
+  if (isAnimating || wheelLocked) {
+    wheelDelta = 0;
+    unlockWheel();
+    return;
+  }
+
   wheelDelta += delta;
 
-  wheelGestureTimer = setTimeout(() => {
-    const totalDelta = wheelDelta;
+  clearTimeout(wheelEndTimer);
 
+  // 等待這次手勢的事件暫停
+  wheelEndTimer = setTimeout(() => {
+    const totalDelta = wheelDelta;
     wheelDelta = 0;
-    wheelGestureTimer = null;
 
     if (Math.abs(totalDelta) < 35) return;
-    if (isAnimating) return;
+    if (isAnimating || wheelLocked) return;
 
-    const current = getCurrentPanelIndex();
     const direction = totalDelta > 0 ? 1 : -1;
+    const current = getCurrentPanelIndex();
 
+    wheelLocked = true;
     goToPanel(current + direction);
 
-  }, 280);
+    // 若已經到最上方或最下方，沒有實際動畫，也要解除鎖定
+    if (!isAnimating) {
+      unlockWheel();
+    }
+
+  }, 180);
 
 }, { passive: false });
 
