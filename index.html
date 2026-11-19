@@ -40,10 +40,7 @@
     --menu-icon-w:30px;
     --menu-icon-h:30px;
 
-    /* ---------- Logo 設定 ---------- */
-    /* 圖片模式:調整圖片高度(寬度依比例自動) */
     --logo-img-height:8px;
-    /* 文字模式:調整文字大小 / 粗細 / 字距 */
     --logo-text-size:13px;
     --logo-text-weight:900;
     --logo-text-spacing:0.04em;
@@ -51,7 +48,7 @@
   *{box-sizing:border-box; margin:0; padding:0;}
   html{scroll-behavior:smooth; background:#000000; overscroll-behavior:none;}
   body{
-    background:#000000;   /* 預設黑底:手機過度捲動/網址列伸縮時不會露出白色 */
+    background:#000000;   
     overscroll-behavior:none;
     color:var(--ink);
     font-family:"Inter","Noto Sans TC",sans-serif;
@@ -78,11 +75,11 @@
     font-family:"Inter","Noto Sans TC",sans-serif;
     font-size:20px; font-weight:600; letter-spacing:0.02em;
   }
-  /* 圖片模式:預設用黑色 logo 圖,首圖上自動反白,白底區塊恢復黑色 */
+
   .brand img{height:var(--logo-img-height, 8px); width:auto; display:block; filter:brightness(0) invert(1); transition:filter .35s ease;}
   header.header--light .brand img{filter:none;}
 
-  /* 文字模式:首圖上白字,白底區塊黑字 */
+
   .brand-text{
     display:block;
     font-size:var(--logo-text-size, 14px);
@@ -95,7 +92,7 @@
   }
   header.header--light .brand-text{ color:#000000; }
 
-  /* 依 data-logo-mode 切換顯示哪一種 */
+
   .brand[data-logo-mode="image"] .brand-text{ display:none; }
   .brand[data-logo-mode="text"]  .brand-img{ display:none; }
 
@@ -148,14 +145,12 @@
 .full-section > *:not(.section-bg):not(.hero-bg){
   position:relative; z-index:1;
 }
-  /* character / goods / about 維持白底(其餘區域預設黑底) */
+
   #character, #goods, #about{ background-color:#ffffff; }
   #character .section-bg{ background-image:none; }
   #goods .section-bg{ background-image:none; }
   #about .section-bg{ background-image:url(about-background.png); }
 
-  /* ---------- 各版面獨立文字顏色/大小設定 ---------- */
-  /* 直接改下面每個區塊的三個數值,只會影響該版面,不影響其他版面 */
   #character{
     --panel-title-color:var(--ink);
     --panel-title-size:18px;
@@ -241,7 +236,6 @@
   .shop-link:hover{ opacity:0.55; }
   .shop-link-wrap{ text-align:center; margin-top:28px; }
 
-  /* about 左右留白:數值越大,文字離螢幕邊緣越遠 */
 .about-block{ padding-left:32px; padding-right:32px; }
 @media (max-width:520px){ .about-block{ padding-left:32px; padding-right:32px; } }
 
@@ -328,10 +322,9 @@
   }
 
   footer{
-    /* ↓↓↓ 直接改這些數值,可調整頁尾的高度、色塊/背景圖與文字樣式 ↓↓↓ */
-    --footer-height:150px;          /* 頁尾高度(內容較多時會自動撐高) */
-    --footer-bg-color:#000000;      /* 色塊顏色 */
-    --footer-bg-image:none;         /* 想用圖片:改成 url('圖片檔名.jpg') */
+    --footer-height:150px;          
+    --footer-bg-color:#000000;    
+    --footer-bg-image:none;        
     --footer-text-color:#ffffff;
     --footer-text-size:10px;
     --footer-text-weight:500;
@@ -372,12 +365,12 @@
   .drawer-overlay.open{opacity:1; visibility:visible;}
   .drawer{
     position:fixed; left:0; width:100%;
-    top:var(--header-h);   /* 由JS依實際頁首高度動態覆寫,這裡是備用值 */
+    top:var(--header-h);   
     height:auto; max-height:calc(85vh - var(--header-h));
     background-color:transparent; color:#ffffff;
     background-size:100% 100%;
     background-position:center;
-    z-index:45;   /* 低於頁首(70),頁首Logo與圖示永遠在最上層不被蓋住 */
+    z-index:45;   
     opacity:0; visibility:hidden; transform:translateY(-12px);
     transition:opacity .3s ease, transform .3s ease, background-color .3s ease, color .3s ease;
     padding:2px var(--header-pad-x) 40px;
@@ -387,7 +380,7 @@
   .drawer.open{ opacity:1; visibility:visible; transform:translateY(0); }
   .drawer.drawer--light{
     background-color:transparent; color:#000000;
-    --drawer-bg-image:url(drawer.png);   /* 想加選單背景圖,把none換成 url('圖片檔名.jpg') */
+    --drawer-bg-image:url(drawer.png);   
     background-image:var(--drawer-bg-image);
   }
   .drawer-group{
@@ -403,7 +396,6 @@
   @media (max-width:860px){
     nav.groups{display:none;}
     .menu-toggle{display:flex;}
-    /* 手機:內容整體往上挪,避免左右箭頭被瀏覽器底部工具列擋住。數值越大,內容越往上 */
     .full-section:not(.hero){ padding-bottom:180px; }
   }
   @media (max-width:520px){
@@ -543,7 +535,7 @@
   <div class="footer-links"></div>
   <div class="footer-bottom">
     <span>For resume and portfolio purposes only.</span>
-    <span>Designed by ZHANG XIN FANG © 2026</span>
+    <span>Designed by ZXF © 2026</span>
     <span><br><br>ʕ•̮͡•ʔ ฅ</span>
   </div>
 </footer>
@@ -616,7 +608,6 @@
   let isAnimating = false;
 
   function getCurrentPanelIndex(){
-    /* 已捲到頁面最底(頁尾較矮時,頁尾頂端不會對齊視窗頂端)→ 視為最後一個面板 */
     if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
       return panels.length - 1;
     }
@@ -636,7 +627,6 @@
     setTimeout(() => { isAnimating = false; }, 850);
   }
 
-  /* 手機選單連結:直接指定跳轉目標面板,不依賴瀏覽器原生錨點跳轉 */
   document.querySelectorAll('.drawer-group a').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -649,7 +639,6 @@
     });
   });
 
-  /* 桌面頂部選單連結:同樣改用JS導航,不讓網址列出現 #character 這類錨點 */
   document.querySelectorAll('.top-link').forEach(a => {
     a.addEventListener('click', (e) => {
       e.preventDefault();
@@ -659,7 +648,6 @@
     });
   });
 
-  /* 點擊Logo:確實回到首圖(index 0),並清除網址上殘留的 # 錨點 */
   if (logoLink) {
     logoLink.addEventListener('click', (e) => {
       e.preventDefault();
@@ -668,7 +656,6 @@
     });
   }
 
-  /* 頁面載入時:清除網址殘留的錨點,並確保一定從首圖(最上方)開始 */
   window.addEventListener('load', () => {
     if (window.location.hash) {
       history.replaceState(null, '', window.location.pathname + window.location.search);
@@ -676,7 +663,6 @@
     window.scrollTo(0, 0);
   });
 
-  /* 滾輪/觸控板:必須是「新的一次滑動」才換頁。慣性滾動(連續事件)不會再觸發下一頁 */
   let lastWheelTime = 0;
   window.addEventListener('wheel', (e) => {
     e.preventDefault();
@@ -730,12 +716,12 @@
       nextBtn.disabled = index >= maxIndex();
     }
     function next(){
-      if (index >= maxIndex()) return;   // 已在最後,不循環
+      if (index >= maxIndex()) return;   
       index += 1;
       update();
     }
     function prev(){
-      if (index <= 0) return;   // 已在開頭,不循環
+      if (index <= 0) return;   
       index -= 1;
       update();
     }
