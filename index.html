@@ -534,7 +534,7 @@
 <footer id="siteFooter" data-header="light">
   <div class="footer-links"></div>
   <div class="footer-bottom">
-    <span>For resume and portfolio purposes only.</span>
+    <span>For resume and portfolio purposes only. Ver.5</span>
     <span>Designed by ZXF © 2026</span>
     <span><br><br>ʕ•̮͡•ʔ ฅ</span>
   </div>
@@ -663,17 +663,38 @@
     window.scrollTo(0, 0);
   });
 
-  let lastWheelTime = 0;
+ let wheelAccum = 0;
+  let wheelLockUntil = 0;
+  let wheelResetTimer = null;
+
   window.addEventListener('wheel', (e) => {
     e.preventDefault();
+
     const now = Date.now();
-    const idle = now - lastWheelTime;
-    lastWheelTime = now;
-    if (isAnimating || idle < 220) return;
-    if (Math.abs(e.deltaY) < 4) return;
-    const current = getCurrentPanelIndex();
-    goToPanel(current + (e.deltaY > 0 ? 1 : -1));
-  }, { passive:false });
+    // 動畫中或剛觸發換頁後的短暫緩衝期，忽略慣性餘波
+    if (isAnimating || now < wheelLockUntil) return;
+
+    // 水平滑動明顯大於垂直滑動時不觸發上下換頁
+    if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) return;
+
+    wheelAccum += e.deltaY;
+
+    // 停止滑動一段時間後重設累積值，避免殘留慣性誤觸
+    clearTimeout(wheelResetTimer);
+    wheelResetTimer = setTimeout(() => {
+      wheelAccum = 0;
+    }, 160);
+
+    // Mac 觸控板單次雙指撥動通常會累積超過此門檻
+    const threshold = 45;
+    if (Math.abs(wheelAccum) >= threshold) {
+      const dir = wheelAccum > 0 ? 1 : -1;
+      wheelAccum = 0;
+      wheelLockUntil = now + 750; // 擋掉觸控板放開後的慣性滑動
+      const current = getCurrentPanelIndex();
+      goToPanel(current + dir);
+    }
+  }, { passive: false });
 
   document.addEventListener('touchmove', (e) => {
   e.preventDefault();
