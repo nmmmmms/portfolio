@@ -534,7 +534,7 @@
 <footer id="siteFooter" data-header="light">
   <div class="footer-links"></div>
   <div class="footer-bottom">
-    <span>For resume and portfolio purposes only. ver.3</span>
+    <span>For resume and portfolio purposes only. ver.2</span>
     <span>Designed by ZXF © 2026 </span>
     <span><br><br>ʕ•̮͡•ʔ ฅ</span>
   </div>
@@ -718,6 +718,52 @@ function goToPanel(index){
 let wheelDelta = 0;
 let wheelGestureTimer = null;
 let ignoreWheelGesture = false;
+
+window.addEventListener('wheel', (e) => {
+  e.preventDefault();
+
+  clearTimeout(wheelGestureTimer);
+
+  if (isAnimating || ignoreWheelGesture) {
+    ignoreWheelGesture = true;
+    wheelDelta = 0;
+
+    wheelGestureTimer = setTimeout(() => {
+      ignoreWheelGesture = false;
+      wheelGestureTimer = null;
+    }, 280);
+
+    return;
+  }
+
+  let delta = e.deltaY;
+
+  if (e.deltaMode === 1) {
+    delta *= 16;
+  } else if (e.deltaMode === 2) {
+    delta *= window.innerHeight;
+  }
+
+  wheelDelta += delta;
+
+  wheelGestureTimer = setTimeout(() => {
+    const totalDelta = wheelDelta;
+
+    wheelDelta = 0;
+    wheelGestureTimer = null;
+
+    if (Math.abs(totalDelta) < 35) return;
+    if (isAnimating) return;
+
+    const current = getCurrentPanelIndex();
+    const direction = totalDelta > 0 ? 1 : -1;
+
+    goToPanel(current + direction);
+
+  }, 280);
+
+}, { passive: false });
+
 
   document.addEventListener('touchmove', (e) => {
   e.preventDefault();
