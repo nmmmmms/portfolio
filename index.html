@@ -663,17 +663,42 @@
     window.scrollTo(0, 0);
   });
 
-  let lastWheelTime = 0;
-  window.addEventListener('wheel', (e) => {
-    e.preventDefault();
-    const now = Date.now();
-    const idle = now - lastWheelTime;
-    lastWheelTime = now;
-    if (isAnimating || idle < 220) return;
-    if (Math.abs(e.deltaY) < 4) return;
-    const current = getCurrentPanelIndex();
-    goToPanel(current + (e.deltaY > 0 ? 1 : -1));
-  }, { passive:false });
+ 
+let wheelDelta = 0;
+let wheelLocked = false;
+let wheelResetTimer;
+
+window.addEventListener('wheel', (e) => {
+  e.preventDefault();
+
+  if (wheelLocked || isAnimating) {
+    clearTimeout(wheelResetTimer);
+    wheelResetTimer = setTimeout(() => {
+      wheelLocked = false;
+      wheelDelta = 0;
+    }, 250);
+    return;
+  }
+
+  wheelDelta += e.deltaY;
+
+  if (Math.abs(wheelDelta) < 30) return;
+
+  const direction = wheelDelta > 0 ? 1 : -1;
+
+  wheelLocked = true;
+  wheelDelta = 0;
+
+  const current = getCurrentPanelIndex();
+  goToPanel(current + direction);
+
+  clearTimeout(wheelResetTimer);
+  wheelResetTimer = setTimeout(() => {
+    wheelLocked = false;
+    wheelDelta = 0;
+  }, 500);
+
+}, { passive: false });
 
   document.addEventListener('touchmove', (e) => {
   e.preventDefault();
