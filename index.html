@@ -534,8 +534,8 @@
 <footer id="siteFooter" data-header="light">
   <div class="footer-links"></div>
   <div class="footer-bottom">
-    <span>For resume and portfolio purposes only. ver.4</span>
-    <span>Designed by ZXF © 2026 </span>
+    <span>For resume and portfolio purposes only.</span>
+    <span>Designed by ZXF © 2026</span>
     <span><br><br>ʕ•̮͡•ʔ ฅ</span>
   </div>
 </footer>
@@ -619,64 +619,13 @@
     return closest;
   }
 
-
-let scrollEndFallback = null;
-let scrollEndHandler = null;
-
-function goToPanel(index){
-  if (drawerOpen) closeDrawer();
-
-  index = Math.max(0, Math.min(panels.length - 1, index));
-
-  if (isAnimating) return;
-
-  const target = panels[index];
-  if (!target) return;
-
-  if (Math.abs(target.getBoundingClientRect().top) < 2) {
-    return;
+  function goToPanel(index){
+    if (drawerOpen) closeDrawer();
+    index = Math.max(0, Math.min(panels.length - 1, index));
+    isAnimating = true;
+    panels[index].scrollIntoView({ behavior:'smooth' });
+    setTimeout(() => { isAnimating = false; }, 850);
   }
-
-  isAnimating = true;
-
-  clearTimeout(scrollEndFallback);
-
-  if (scrollEndHandler) {
-    document.removeEventListener('scrollend', scrollEndHandler);
-    scrollEndHandler = null;
-  }
-
-  const finishAnimation = () => {
-    isAnimating = false;
-
-    clearTimeout(scrollEndFallback);
-
-    document.removeEventListener(
-      'scrollend',
-      finishAnimation
-    );
-
-    scrollEndHandler = null;
-  };
-
-  scrollEndHandler = finishAnimation;
-
-  document.addEventListener(
-    'scrollend',
-    finishAnimation,
-    { once: true }
-  );
-
-  target.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
-
-  scrollEndFallback = setTimeout(() => {
-    finishAnimation();
-  }, 1600);
-}
-
 
   document.querySelectorAll('.drawer-group a').forEach(a => {
     a.addEventListener('click', (e) => {
@@ -714,151 +663,17 @@ function goToPanel(index){
     window.scrollTo(0, 0);
   });
 
-
-
-let wheelDelta = 0;
-let wheelEndTimer = null;
-let wheelUnlockTimer = null;
-
-let isAnimating = false;
-let wheelLocked = false;
-
-function getCurrentPanelIndex(){
-  if (
-    window.innerHeight + window.scrollY >=
-    document.documentElement.scrollHeight - 2
-  ) {
-    return panels.length - 1;
-  }
-
-  let closest = 0;
-  let minDist = Infinity;
-
-  panels.forEach((p, i) => {
-    const dist = Math.abs(p.getBoundingClientRect().top);
-
-    if (dist < minDist) {
-      minDist = dist;
-      closest = i;
-    }
-  });
-
-  return closest;
-}
-
-function unlockWheel(){
-  clearTimeout(wheelUnlockTimer);
-
-  if (isAnimating) return;
-
-  wheelUnlockTimer = setTimeout(() => {
-    if (!isAnimating) {
-      wheelLocked = false;
-      wheelDelta = 0;
-    }
-  }, 450);
-}
-
-function goToPanel(index){
-  if (drawerOpen) closeDrawer();
-  if (isAnimating) return;
-
-  index = Math.max(0, Math.min(panels.length - 1, index));
-
-  const target = panels[index];
-  if (!target) return;
-
-  if (Math.abs(target.getBoundingClientRect().top) < 2) {
-    return;
-  }
-
-  isAnimating = true;
-  wheelLocked = true;
-
-  clearTimeout(wheelUnlockTimer);
-
-  let finished = false;
-
-  const finishAnimation = () => {
-    if (finished) return;
-    finished = true;
-
-    isAnimating = false;
-
-    document.removeEventListener(
-      'scrollend',
-      finishAnimation
-    );
-
-    clearTimeout(animationFallback);
-
-    unlockWheel();
-  };
-
-  document.addEventListener(
-    'scrollend',
-    finishAnimation,
-    { once: true }
-  );
-
-  target.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start'
-  });
-
-  const animationFallback = setTimeout(
-    finishAnimation,
-    1400
-  );
-}
-
-// 導覽列與選單仍使用原本的 goToPanel()
-
-window.addEventListener('wheel', (e) => {
-  e.preventDefault();
-
-  let delta = e.deltaY;
-
-  if (e.deltaMode === 1) {
-    delta *= 16;
-  } else if (e.deltaMode === 2) {
-    delta *= window.innerHeight;
-  }
-
-  // 動畫中或鎖定中，不接受新的切換
-  if (isAnimating || wheelLocked) {
-    wheelDelta = 0;
-    unlockWheel();
-    return;
-  }
-
-  wheelDelta += delta;
-
-  clearTimeout(wheelEndTimer);
-
-  // 等待這次手勢的事件暫停
-  wheelEndTimer = setTimeout(() => {
-    const totalDelta = wheelDelta;
-    wheelDelta = 0;
-
-    if (Math.abs(totalDelta) < 35) return;
-    if (isAnimating || wheelLocked) return;
-
-    const direction = totalDelta > 0 ? 1 : -1;
+  let lastWheelTime = 0;
+  window.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const now = Date.now();
+    const idle = now - lastWheelTime;
+    lastWheelTime = now;
+    if (isAnimating || idle < 220) return;
+    if (Math.abs(e.deltaY) < 4) return;
     const current = getCurrentPanelIndex();
-
-    wheelLocked = true;
-    goToPanel(current + direction);
-
-    // 若已經到最上方或最下方，沒有實際動畫，也要解除鎖定
-    if (!isAnimating) {
-      unlockWheel();
-    }
-
-  }, 180);
-
-}, { passive: false });
-
+    goToPanel(current + (e.deltaY > 0 ? 1 : -1));
+  }, { passive:false });
 
   document.addEventListener('touchmove', (e) => {
   e.preventDefault();
